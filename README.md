@@ -60,6 +60,7 @@ Python packages: [tqdm](https://tqdm.github.io), [pillow](https://pillow.readthe
 python slide_extractor.py --include-test
 or
 pytest
+# Tests Run on automatically on merge
 ```
 
 
