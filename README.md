@@ -1,4 +1,4 @@
-# slide-extractor
+# slide_extractor
 
 A script that extracts slides from lecture video and converts them into a searchable OCRed PDF.
 
@@ -8,7 +8,7 @@ This script extracts different frames from lecture videos in current directory r
 
 ## Usage:
 
-Put `slide-extractor.py` in the video directory, run `python slide-extractor.py`. The output PDFs will be stored in the same (sub)directories as those videos.
+Put `slide_extractor.py` in the video directory, run `python slide_extractor.py`. The output PDFs will be stored in the same (sub)directories as those videos.
 
 
 
