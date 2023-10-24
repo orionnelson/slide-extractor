@@ -35,7 +35,10 @@ jobs:
 
     - name: Install Tools (macOS)
       if: matrix.os == 'macOS-latest'
-      run: bash -c "brew update && brew install img2pdf tesseract ghostscript"
+      run: |
+           bash -c "brew update && brew install img2pdf tesseract ghostscript python@3.9"
+           echo 'alias python="python3"' >> ~/.bash_profile
+           source ~/.bash_profile
 
     - name: Install Tools (Windows)
       if: matrix.os == 'windows-latest'
@@ -48,20 +51,30 @@ jobs:
         . venv/bin/activate # On Windows, you might need to change this to: venv\Scripts\Activate
 
     - name: Install requirements
-      run: pip install -r requirements.txt && pip install pytest
+      run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest pytest-cov
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     - name: Run pytest
-      run: pytest > pytest_output.txt
+      run: |
+          pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=./slide_extractor.py test/ | tee pytest-coverage.txt
       id: pytest_results
       continue-on-error: true
 
-
+    - name: Pytest coverage comment
+      uses: MishaKav/pytest-coverage-comment@main
+      with:
+          pytest-coverage-path: ./pytest-coverage.txt
+          junitxml-path: ./pytest.xml
+          github-token: ${{ secrets.MY_GITHUB_TOKEN }}
+    
     - name: Create comment
       uses: actions/github-script@v6
       with:
         script: |
           const fs = require('fs');
-          const result = fs.readFileSync('pytest_output.txt', 'utf8');
+          const result = fs.readFileSync('pytest.xml', 'utf8');
           const commentBody = `
             ## Pytest Results:
             \`\`\`
