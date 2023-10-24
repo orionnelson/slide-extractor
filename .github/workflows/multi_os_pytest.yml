@@ -75,23 +75,18 @@ jobs:
         script: |
           const fs = require('fs');
           const xml = fs.readFileSync('pytest.xml', 'utf8');
-          // Create a DOMParser to parse the XML
-          const parser = new DOMParser();
-          const xmlDoc = parser.parseFromString(xml, 'text/xml');
-          const testCases = xmlDoc.getElementsByTagName('testcase');
-          // Create the header for the markdown table
+          const testcaseMatches = xml.match(/<testcase[^>]*>/g) || [];
           let table = "| Class Name | Test Name | Time |\n";
           table += "|------------|-----------|------|\n";
-          // Extract the testcase details and format them as markdown table rows
-          for (let i = 0; i < testCases.length; i++) {
-                  const testcase = testCases[i];
-                  const classname = testcase.getAttribute('classname');
-                  const name = testcase.getAttribute('name');
-                  const time = testcase.getAttribute('time');
-                  table += `| ${classname} | ${name} | ${time} |\n`;
-              }
-
-           const commentBody = `
+          testcaseMatches.forEach(testcase => {
+          const classnameMatch = testcase.match(/classname="([^"]*)"/);
+          const nameMatch = testcase.match(/name="([^"]*)"/);
+          const timeMatch = testcase.match(/time="([^"]*)"/);
+          const classname = classnameMatch ? classnameMatch[1] : '';
+          const name = nameMatch ? nameMatch[1] : '';
+          const time = timeMatch ? timeMatch[1] : '';
+          table += `| ${classname} | ${name} | ${time} |\n`; });
+          const commentBody = `
               ## Pytest Results:
               ${table}
             `;
