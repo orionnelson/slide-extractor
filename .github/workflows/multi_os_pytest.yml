@@ -55,11 +55,11 @@ jobs:
       id: pytest_results
       continue-on-error: true
 
-    - name: Comment PR with pytest results
-      uses: actions/github-script@v5
+
+    - name: Create comment
+      uses: actions/github-script@v6
       with:
         script: |
-          const { context, github } = require('@actions/github');
           const fs = require('fs');
           const result = fs.readFileSync('pytest_output.txt', 'utf8');
           const commentBody = `
@@ -68,8 +68,11 @@ jobs:
             ${result}
             \`\`\`
           `;
-          github.issues.createComment({
-            ...context.repo,
-            issue_number: context.payload.pull_request.number,
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
             body: commentBody
           });
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+       
