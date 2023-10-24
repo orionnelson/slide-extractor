@@ -26,7 +26,11 @@ jobs:
 
     - name: Install bash (Windows)
       if: matrix.os == 'windows-latest'
-      run: choco install git -y
+      run: |
+        Invoke-WebRequest -Uri https://github.com/git-for-windows/git/releases/download/v2.42.0.windows.1/Git-2.42.0-64-bit.exe -OutFile git-installer.exe
+        Start-Process git-installer.exe -ArgumentList '/VERYSILENT' -Wait
+        Remove-Item git-installer.exe
+      shell: powershell
 
     - name: Install Tools (Ubuntu)
       if: matrix.os == 'ubuntu-latest'
