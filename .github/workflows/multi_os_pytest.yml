@@ -37,8 +37,8 @@ jobs:
       if: matrix.os == 'macOS-latest'
       run: |
            bash -c "brew update && brew install img2pdf tesseract ghostscript python@3.9"
-           echo 'alias python="python3"' >> ~/.bash_profile
-           source ~/.bash_profile
+           echo "Creating a symbolic link from python to python3..."
+           sudo ln -s /usr/local/bin/python3 /usr/local/bin/python
 
     - name: Install Tools (Windows)
       if: matrix.os == 'windows-latest'
@@ -58,7 +58,7 @@ jobs:
 
     - name: Run pytest
       run: |
-          pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=./slide_extractor.py test/ | tee pytest-coverage.txt
+          pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=. ./test | tee pytest-coverage.txt
       id: pytest_results
       continue-on-error: true
 
@@ -74,18 +74,38 @@ jobs:
       with:
         script: |
           const fs = require('fs');
-          const result = fs.readFileSync('pytest.xml', 'utf8');
-          const commentBody = `
-            ## Pytest Results:
-            \`\`\`
-            ${result}
-            \`\`\`
-          `;
+          const xml2js = require('xml2js');
+          const xml = fs.readFileSync('pytest.xml', 'utf8');
+          // Convert XML to JSON
+          xml2js.parseString(xml, (err, result) => {
+            if (err) {
+              console.error('Error parsing XML:', err);
+              return;
+            }
+          const testCases = result.testsuites.testsuite[0].testcase;
+          // Create the header for the markdown table
+          let table = "| Class Name | Test Name | Time |\n";
+          table += "|------------|-----------|------|\n";
+
+            // Extract the testcase details and format them as markdown table rows
+            for (const testCase of testCases) {
+              const classname = testCase.$.classname;
+              const name = testCase.$.name;
+              const time = testCase.$.time;
+              table += `| ${classname} | ${name} | ${time} |\n`;
+            }
+
+            const commentBody = `
+              ## Pytest Results:
+              ${table}
+            `;
+
           github.rest.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
             body: commentBody
           });
+          });
         github-token: ${{ secrets.MY_GITHUB_TOKEN }}
-       
+
