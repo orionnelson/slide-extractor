@@ -74,5 +74,5 @@ jobs:
             repo: context.repo.repo,
             body: commentBody
           });
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ secrets.MY_GITHUB_TOKEN }}
        
