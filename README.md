@@ -55,6 +55,12 @@ Python packages: [tqdm](https://tqdm.github.io), [pillow](https://pillow.readthe
     sys	0m7.876s
     ```
 
+## Testing
+```bash
+python slide_extractor.py --include-test
+or
+pytest
+```
 
 
 ## Sidenote
